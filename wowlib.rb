@@ -75,7 +75,7 @@ end
 
 def request(site, method, uri, params = {})
   begin
-    response = site[:access_token].request(method, URI.escape(site[:site_url]+uri), encode(params))
+    response = site[:access_token].request(method, URI.escape(site[:site_url]+uri), params)
     parser = Yajl::Parser.new
     json = parser.parse(response.body)
 
