@@ -25,7 +25,7 @@ puts "\"I gotta have more wowbell!\"\n\n"
 # Exchange api keys for an access token instance to perform api requests
 def selectSite(site_name)
   site = {}
-  path = "wowlib/api_keys/#{site_name}.txt"
+  path = "#{File.dirname(__FILE__)}/api_keys/#{site_name}.txt"
   begin
     file = File.open(path, "r") #read-only
   rescue => e
@@ -40,7 +40,7 @@ def selectSite(site_name)
     site.each do |key, value|
       txt += "#{value}\n"
     end
-    aFile = File.new("wowlib/api_keys/#{site_name}.txt", "w")
+    aFile = File.new("#{File.dirname(__FILE__)}/api_keys/#{site_name}.txt", "w")
     aFile.write(txt)
     aFile.close
     puts "\n#{@libmsg}Cool. I'll remember that.\n\n"
