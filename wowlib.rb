@@ -1,7 +1,7 @@
 # encoding: utf-8
 
-# Wow Team Standard Library
-# Last updated: 10/22/2012
+# Wow Dev Standard Library
+# Last updated: 11/8/2012
 
 require 'nokogiri'
 require 'rubygems'
