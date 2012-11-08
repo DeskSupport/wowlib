@@ -1,0 +1,5 @@
+Usage: 
+
+require "./wowlib/wowlib.rb"
+@site = selectSite("zzz-ty")
+response = request(@site, :post, "/api/v1/topics.json", {:name => "New Topic"})
