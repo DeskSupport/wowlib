@@ -33,10 +33,10 @@ def selectSite(site_name)
     puts "#{@libmsg}No API key on file for Desk site \"#{site_name}\". Shall we create one?\n\n"
     puts "#{@prompt}Site URL: https://#{site_name}.desk.com"
     site[:site_url] = "https://#{site_name}.desk.com"
-    site[:consumer_key] = ask("#{@prompt}Consumer key: ")
-    site[:consumer_secret] = ask("#{@prompt}Consumer token: ")
-    site[:token] = ask("#{@prompt}Token: ")
-    site[:token_secret] = ask("#{@prompt}Token secret: ")
+    site[:consumer_key] = ask("#{@prompt}Consumer key (\"API App Key\"): ")
+    site[:consumer_secret] = ask("#{@prompt}Consumer token (\"API App Secret\"): ")
+    site[:token] = ask("#{@prompt}Your Token: ")
+    site[:token_secret] = ask("#{@prompt}Your Token Secret: ")
     site.each do |key, value|
       txt += "#{value}\n"
     end
@@ -87,8 +87,8 @@ def request(site, method, uri, params = {})
        sleep 1
        return "ratelimited"
     else
-      log "ERROR: #{response.body}"
-      json['errors'].each {|error| log("ERROR MESSAGE: #{error}") }
+      puts "ERROR: #{response.body}"
+      json['errors'].each {|error| puts "ERROR MESSAGE: #{error}" }
       return json
     end
   rescue => e
@@ -101,7 +101,13 @@ end
 
 def dump(output, path)
   aFile = File.new(path, "w")
-  aFile.write(output)
+  res = aFile.write(output)
   aFile.close
-  puts "Data saved to \"#{path}\".\n\n"
+  if res
+    puts "Data saved to \"#{path}\".\n\n"
+    return true
+  else
+    puts "Error saving to \"#{path}\".\n\n"
+    return false
+  end
 end
