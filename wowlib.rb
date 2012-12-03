@@ -100,6 +100,11 @@ def request(site, method, uri, params = {})
   end
 end
 
+def log(message)
+  puts message
+  File.open("wowlib.log", 'a') {|f| f.write("#{message}\n") }
+end
+
 def dump(output, path)
   aFile = File.new(path, "w")
   res = aFile.write(output)
