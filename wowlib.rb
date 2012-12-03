@@ -92,7 +92,8 @@ def request(site, method, uri, params = {})
       return json
     end
   rescue => e
-    puts "Encountered an error while communicating with Desk API: #{e}"
+    puts "Error from Desk API: #{e}"
+    puts "Params sent: #{params}"
     puts "Taking a 1 second nap before retrying..."
     sleep(1)
     retry
