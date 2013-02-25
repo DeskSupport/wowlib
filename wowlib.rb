@@ -75,27 +75,85 @@ end
 
 def request(site, method, uri, params = {})
   begin
-    response = site[:access_token].request(method, URI.escape(site[:site_url]+uri), params)
+
+    if method == :patch
+      method = :post
+      options = {"X-HTTP-Method-Override" => "PATCH"}
+    end
+
+    response = site[:access_token].request(method, URI.escape(site[:site_url]+uri), params, options)
     parser = Yajl::Parser.new
     json = parser.parse(response.body)
 
-    if response.code == "200"
+    if response.code == "200" || response.code == "201"
       return json
-    elsif json["error"] == "rate_limit_exceeded"
-       puts response
-       puts "Waiting for rate limit"
-       sleep 1
-       return "ratelimited"
     else
-      puts "ERROR: #{response.body}"
-      json['errors'].each {|error| puts "ERROR MESSAGE: #{error}" }
-      return json
+
+      if (json['errors'])
+        # Customer already exists or is invalid
+        if (json['message'] == "Validation Failed" && json['errors']['emails'][0]['value'][0] == "taken") 
+          #######system("say Email.")
+          puts "Params sent: #{params}"
+          puts "Response: #{json}"
+          return json
+        elsif (json['message'] == "Validation Failed" && json['errors']['emails'][0]['value'][0] == "invalid") 
+          system("say Invalid email")
+          puts "Params sent: #{params}"
+          puts "Response: #{json}"
+          json['errors'].each {|error| puts "Error from API: #{error}" }
+          new_email = ask("Change email to:")
+          new_params = Yajl::Parser.parse(params.strip)
+          new_params["emails"] = [{:type=>"work",:value=>new_email}]
+          new_params = Yajl::Encoder.encode(new_params)
+          puts new_params
+          return request(@site, :post, "/api/v2/customers", new_params)
+        else
+          puts "Params sent: #{params}"
+          puts "Response: #{json}"
+          json['errors'].each {|error| puts "Error from API: #{error}" }
+          if (params.include? "addresses")
+            system("say Address issue. Skipping.")
+            return false
+          elsif json['errors'][0] == "Email is invalid."
+            system("say Fix the email")
+            new_email = ask("Change email to:")
+            params[:customer_email] = new_email
+            return request(@site, :post, "/api/v1/interactions.json", params)
+          else
+            system("say Response needed")
+            ask("Either press enter to skip or exit, fix, rerun.")
+          end
+          return false
+        end
+      elsif (json["error"])
+        system("say Error")
+        puts "Params sent: #{params}"
+        puts "Response: #{json}"
+        #return "ratelimited"
+        raise "API ERROR"
+      else
+        system("say Fatal")
+        puts "Unsure how to handle response!"
+        puts "Params sent: #{params}"
+        puts "Response: #{response.body}"
+        puts "Exiting"
+        exit
+      end
+
     end
+
   rescue => e
-    puts "Error from Desk API: #{e}"
     puts "Params sent: #{params}"
-    puts "Taking a 1 second nap before retrying..."
+          puts "Response: #{json}"
+    system("say Retrying")
+    puts "Exception: #{e}"
+    print "Going to retry in 3 seconds"
     sleep(1)
+    print "."
+    sleep(1)
+    print "."
+    sleep(1)
+    print ".\n"
     retry
   end
 end
